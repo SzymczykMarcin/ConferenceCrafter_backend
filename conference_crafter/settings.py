@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "graphene_django",
     "events.apps.EventsConfig",
     "speakers.apps.SpeakersConfig",
+    "sponsors.apps.SponsorsConfig",
 ]
 
 MIDDLEWARE = [

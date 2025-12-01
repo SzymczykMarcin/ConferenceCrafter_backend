@@ -36,12 +36,16 @@ Django backend for managing conference events and speakers with admin CRUD APIs 
   - `GET/POST/PUT/PATCH/DELETE /api/admin/event-types/`
   - `GET/POST/PUT/PATCH/DELETE /api/admin/events/`
   - `GET/POST/PUT/PATCH/DELETE /api/admin/speakers/`
+  - `GET/POST/PUT/PATCH/DELETE /api/admin/sponsors/`
+  - `GET/POST/PUT/PATCH/DELETE /api/admin/coupons/`
 - Public routes (read-only):
   - `GET /api/v1/event-types/`
   - `GET /api/v1/events/`
   - `GET /api/v1/speakers/`
+  - `GET /api/v1/sponsors/`
+  - `GET /api/v1/coupons/`
 
-Filtering and searching are enabled for common fields (event type, presenter, room, company, text search).
+Filtering and searching are enabled for common fields (event type, presenter, room, company, sponsor, coupon code, text search).
 
 ## GraphQL API
 - Endpoint: `POST /graphql/` (GraphiQL enabled in development)
@@ -49,6 +53,8 @@ Filtering and searching are enabled for common fields (event type, presenter, ro
   - `allEventTypes { id name description }`
   - `allEvents { id title eventType { id name } startTime room presenter { id name } description }`
   - `allSpeakers { id name bio company socials photo }`
+  - `allSponsors { id name logoUrl description socials }`
+  - `allCoupons { id code description discountAmount validFrom validTo sponsor { id name } }`
 
 ## Running Checks
 - Run Django system checks and tests:
@@ -61,6 +67,7 @@ Filtering and searching are enabled for common fields (event type, presenter, ro
 - `conference_crafter/` – project configuration, settings, URL routing, GraphQL schema.
 - `events/` – event type and event models, admin configuration, serializers, and viewsets.
 - `speakers/` – speaker models, admin configuration, serializers, and viewsets.
+- `sponsors/` – sponsor and coupon models, admin configuration, serializers, viewsets, and tests.
 
 ## Database
 SQLite is used by default for development. Configure alternative databases via the `DATABASES` setting or environment variables.
