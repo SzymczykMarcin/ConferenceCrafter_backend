@@ -1,5 +1,6 @@
 """Models defining conference events and their classifications."""
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from speakers.models import Speaker
@@ -39,3 +40,26 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Feedback(models.Model):
+    """Represents attendee feedback for an event without requiring accounts."""
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="feedback"
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True)
+    client_token = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["event", "client_token"]),
+        ]
+
+    def __str__(self):
+        return f"Feedback for {self.event} ({self.rating} stars)"

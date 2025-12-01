@@ -38,12 +38,17 @@ Django backend for managing conference events and speakers with admin CRUD APIs 
   - `GET/POST/PUT/PATCH/DELETE /api/admin/speakers/`
   - `GET/POST/PUT/PATCH/DELETE /api/admin/sponsors/`
   - `GET/POST/PUT/PATCH/DELETE /api/admin/coupons/`
+  - `GET/POST/PUT/PATCH/DELETE /api/admin/feedback/`
 - Public routes (read-only):
   - `GET /api/v1/event-types/`
   - `GET /api/v1/events/`
   - `GET /api/v1/speakers/`
   - `GET /api/v1/sponsors/`
   - `GET /api/v1/coupons/`
+  - `GET /api/v1/feedback/`
+- Public create route:
+  - `POST /api/v1/feedback/` (submit anonymous feedback using `event_id`, `rating`, `comment`, `client_token`)
+    - Submissions are throttled per event and client token (default `5/hour`).
 
 Filtering and searching are enabled for common fields (event type, presenter, room, company, sponsor, coupon code, text search).
 
@@ -55,6 +60,9 @@ Filtering and searching are enabled for common fields (event type, presenter, ro
   - `allSpeakers { id name bio company socials photo }`
   - `allSponsors { id name logoUrl description socials }`
   - `allCoupons { id code description discountAmount validFrom validTo sponsor { id name } }`
+  - `allFeedback(eventId: ID) { id rating comment createdAt event { id title } }`
+- Mutation:
+  - `createFeedback(eventId: ID!, rating: Int!, comment: String, clientToken: String!) { feedback { id rating comment createdAt event { id title } } }`
 
 ## Running Checks
 - Run Django system checks and tests:

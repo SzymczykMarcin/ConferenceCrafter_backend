@@ -99,6 +99,9 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",
         "rest_framework.filters.SearchFilter",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        "feedback_event_token": os.environ.get("FEEDBACK_RATE", "5/hour"),
+    },
 }
 
 SIMPLE_JWT = {
