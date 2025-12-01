@@ -1,3 +1,5 @@
+"""Viewsets for administering and browsing conference speakers."""
+
 from rest_framework import permissions, viewsets
 
 from .models import Speaker
@@ -5,6 +7,8 @@ from .serializers import SpeakerSerializer
 
 
 class SpeakerAdminViewSet(viewsets.ModelViewSet):
+    """Admin CRUD endpoint for maintaining speaker records."""
+
     queryset = Speaker.objects.all()
     serializer_class = SpeakerSerializer
     permission_classes = [permissions.IsAdminUser]
@@ -12,6 +16,8 @@ class SpeakerAdminViewSet(viewsets.ModelViewSet):
 
 
 class SpeakerViewSet(viewsets.ReadOnlyModelViewSet):
+    """Public read-only endpoint exposing speaker profiles."""
+
     queryset = Speaker.objects.all()
     serializer_class = SpeakerSerializer
     permission_classes = [permissions.AllowAny]
