@@ -38,6 +38,7 @@ Django backend for managing conference events and speakers with admin CRUD APIs 
   - `GET/POST/PUT/PATCH/DELETE /api/admin/speakers/`
   - `GET/POST/PUT/PATCH/DELETE /api/admin/sponsors/`
   - `GET/POST/PUT/PATCH/DELETE /api/admin/coupons/`
+  - `GET/POST/PUT/PATCH/DELETE /api/admin/coupon-redemptions/`
   - `GET/POST/PUT/PATCH/DELETE /api/admin/feedback/`
 - Public routes (read-only):
   - `GET /api/v1/event-types/`
@@ -45,6 +46,7 @@ Django backend for managing conference events and speakers with admin CRUD APIs 
   - `GET /api/v1/speakers/`
   - `GET /api/v1/sponsors/`
   - `GET /api/v1/coupons/`
+  - `POST /api/v1/coupon-redemptions/` (redeem a coupon by `coupon_code` and `client_token`, enforcing validity windows and optional per-code quotas; returns remaining quota when available)
   - `GET /api/v1/feedback/`
 - Public create route:
   - `POST /api/v1/feedback/` (submit anonymous feedback using `event_id`, `rating`, `comment`, `client_token`)
@@ -76,6 +78,7 @@ Filtering and searching are enabled for common fields (event type, presenter, ro
 - `events/` – event type and event models, admin configuration, serializers, and viewsets.
 - `speakers/` – speaker models, admin configuration, serializers, and viewsets.
 - `sponsors/` – sponsor and coupon models, admin configuration, serializers, viewsets, and tests.
+  - Coupon redemptions are recorded with an anonymous `client_token`, enforce optional `max_redemptions`, and can be managed via admin or `POST /api/v1/coupon-redemptions/`.
 
 ## Database
 SQLite is used by default for development. Configure alternative databases via the `DATABASES` setting or environment variables.

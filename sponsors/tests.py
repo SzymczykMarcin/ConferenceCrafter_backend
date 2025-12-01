@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from .models import Coupon, Sponsor
+from .models import Coupon, CouponRedemption, Sponsor
 
 User = get_user_model()
 
@@ -27,6 +27,7 @@ class SponsorCouponAPITests(TestCase):
             discount_amount=10,
             valid_from=now,
             valid_to=now + timedelta(days=10),
+            max_redemptions=2,
         )
 
     def test_admin_can_crud_sponsor(self):
@@ -90,6 +91,7 @@ class SponsorCouponAPITests(TestCase):
         self.assertGreaterEqual(len(coupon_response.data), 1)
         self.assertEqual(coupon_response.data[0]["code"], self.coupon.code)
         self.assertEqual(coupon_response.data[0]["sponsor"]["id"], self.sponsor.id)
+        self.assertEqual(coupon_response.data[0]["remaining_redemptions"], 2)
 
     def test_coupon_validation_dates(self):
         self.client.force_authenticate(self.admin_user)
@@ -108,3 +110,47 @@ class SponsorCouponAPITests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("valid_to", str(response.data))
+
+    def test_public_can_redeem_coupon_once_per_client(self):
+        response = self.client.post(
+            "/api/v1/coupon-redemptions/",
+            {"coupon_code": self.coupon.code, "client_token": "device-123"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(CouponRedemption.objects.count(), 1)
+
+        repeat_response = self.client.post(
+            "/api/v1/coupon-redemptions/",
+            {"coupon_code": self.coupon.code, "client_token": "device-123"},
+            format="json",
+        )
+        self.assertEqual(repeat_response.status_code, 400)
+        self.assertIn("already", str(repeat_response.data))
+
+    def test_coupon_respects_max_redemptions_and_validity(self):
+        self.coupon.max_redemptions = 1
+        self.coupon.save()
+
+        first = self.client.post(
+            "/api/v1/coupon-redemptions/",
+            {"coupon_code": self.coupon.code, "client_token": "token-1"},
+            format="json",
+        )
+        self.assertEqual(first.status_code, 201)
+
+        second = self.client.post(
+            "/api/v1/coupon-redemptions/",
+            {"coupon_code": self.coupon.code, "client_token": "token-2"},
+            format="json",
+        )
+        self.assertEqual(second.status_code, 400)
+
+        self.coupon.valid_from = timezone.now() + timedelta(days=1)
+        self.coupon.save()
+        future_attempt = self.client.post(
+            "/api/v1/coupon-redemptions/",
+            {"coupon_code": self.coupon.code, "client_token": "token-3"},
+            format="json",
+        )
+        self.assertEqual(future_attempt.status_code, 400)
