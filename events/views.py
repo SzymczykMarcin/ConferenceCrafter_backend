@@ -1,3 +1,5 @@
+"""Viewsets exposing event types and events for admins and attendees."""
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, viewsets
 
@@ -6,6 +8,8 @@ from .serializers import EventSerializer, EventTypeSerializer
 
 
 class EventTypeAdminViewSet(viewsets.ModelViewSet):
+    """Full CRUD interface for managing event categories in the admin API."""
+
     queryset = EventType.objects.all()
     serializer_class = EventTypeSerializer
     permission_classes = [permissions.IsAdminUser]
@@ -13,6 +17,8 @@ class EventTypeAdminViewSet(viewsets.ModelViewSet):
 
 
 class EventAdminViewSet(viewsets.ModelViewSet):
+    """Administrative access for creating, updating, and organizing events."""
+
     queryset = Event.objects.select_related("event_type", "presenter").all()
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAdminUser]
@@ -23,6 +29,8 @@ class EventAdminViewSet(viewsets.ModelViewSet):
 
 
 class EventTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only view of available event categories for public clients."""
+
     queryset = EventType.objects.all()
     serializer_class = EventTypeSerializer
     permission_classes = [permissions.AllowAny]
@@ -30,6 +38,8 @@ class EventTypeViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class EventViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only listing of events with filtering by presenter, type, or room."""
+
     queryset = Event.objects.select_related("event_type", "presenter").all()
     serializer_class = EventSerializer
     permission_classes = [permissions.AllowAny]

@@ -1,7 +1,11 @@
+"""Speaker profiles used across public schedules and admin tools."""
+
 from django.db import models
 
 
 class Speaker(models.Model):
+    """Represents a person presenting content at the conference."""
+
     name = models.CharField(max_length=255)
     bio = models.TextField(blank=True)
     socials = models.JSONField(default=dict, blank=True)
