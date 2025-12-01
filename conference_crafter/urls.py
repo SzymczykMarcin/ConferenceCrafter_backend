@@ -18,6 +18,8 @@ from events.views import (
 from speakers.views import SpeakerAdminViewSet, SpeakerViewSet
 from sponsors.views import (
     CouponAdminViewSet,
+    CouponRedemptionAdminViewSet,
+    CouponRedemptionViewSet,
     CouponViewSet,
     SponsorAdminViewSet,
     SponsorViewSet,
@@ -54,6 +56,11 @@ admin_router.register(
     CouponAdminViewSet,
     basename="admin-coupon",
 )
+admin_router.register(
+    r"coupon-redemptions",
+    CouponRedemptionAdminViewSet,
+    basename="admin-coupon-redemption",
+)
 
 user_router = routers.DefaultRouter()
 user_router.register(
@@ -85,6 +92,11 @@ user_router.register(
     r"coupons",
     CouponViewSet,
     basename="coupon",
+)
+user_router.register(
+    r"coupon-redemptions",
+    CouponRedemptionViewSet,
+    basename="coupon-redemption",
 )
 
 urlpatterns = [
