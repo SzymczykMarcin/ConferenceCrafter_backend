@@ -1,0 +1,17 @@
+from django.contrib import admin
+
+from .models import Event, EventType
+
+
+@admin.register(EventType)
+class EventTypeAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = ("title", "event_type", "start_time", "room", "presenter")
+    list_filter = ("event_type",)
+    search_fields = ("title", "room", "description")
+    autocomplete_fields = ("event_type", "presenter")
