@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from speakers.models import Speaker
 from speakers.serializers import SpeakerSerializer
-from .models import Event, EventType
+from .models import Event, EventType, Feedback
 
 
 class EventTypeSerializer(serializers.ModelSerializer):
@@ -46,3 +46,48 @@ class EventSerializer(serializers.ModelSerializer):
             "presenter_id",
             "description",
         ]
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    """Public serializer for submitting and viewing feedback entries."""
+
+    event = EventSerializer(read_only=True)
+    event_id = serializers.PrimaryKeyRelatedField(
+        source="event", queryset=Event.objects.all(), write_only=True
+    )
+    client_token = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = Feedback
+        fields = [
+            "id",
+            "event",
+            "event_id",
+            "rating",
+            "comment",
+            "client_token",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "event"]
+
+
+class FeedbackAdminSerializer(serializers.ModelSerializer):
+    """Admin serializer exposing client tokens for moderation workflows."""
+
+    event = EventSerializer(read_only=True)
+    event_id = serializers.PrimaryKeyRelatedField(
+        source="event", queryset=Event.objects.all(), write_only=True
+    )
+
+    class Meta:
+        model = Feedback
+        fields = [
+            "id",
+            "event",
+            "event_id",
+            "rating",
+            "comment",
+            "client_token",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "event"]

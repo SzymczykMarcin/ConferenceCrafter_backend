@@ -2,8 +2,9 @@
 
 import graphene
 from graphene_django import DjangoObjectType
+from graphql import GraphQLError
 
-from events.models import Event, EventType
+from events.models import Event, EventType, Feedback
 from speakers.models import Speaker
 from sponsors.models import Coupon, Sponsor
 
@@ -38,6 +39,14 @@ class EventNode(DjangoObjectType):
             "presenter",
             "description",
         )
+
+
+class FeedbackNode(DjangoObjectType):
+    """GraphQL node exposing feedback details without client tokens."""
+
+    class Meta:
+        model = Feedback
+        fields = ("id", "event", "rating", "comment", "created_at")
 
 
 class SponsorNode(DjangoObjectType):
@@ -82,6 +91,11 @@ class Query(graphene.ObjectType):
     all_coupons = graphene.List(
         CouponNode, description="List sponsor coupons along with validity windows."
     )
+    all_feedback = graphene.List(
+        FeedbackNode,
+        event_id=graphene.ID(required=False),
+        description="List public feedback, optionally filtered by event.",
+    )
 
     def resolve_all_event_types(self, info, **kwargs):
         """Return all event types sorted per model defaults."""
@@ -108,5 +122,58 @@ class Query(graphene.ObjectType):
 
         return Coupon.objects.select_related("sponsor").all()
 
+    def resolve_all_feedback(self, info, event_id=None, **kwargs):
+        """Return feedback entries, optionally scoped to a single event."""
 
-schema = graphene.Schema(query=Query)
+        queryset = Feedback.objects.select_related("event").all()
+        if event_id:
+            queryset = queryset.filter(event_id=event_id)
+        return queryset
+
+
+class CreateFeedback(graphene.Mutation):
+    """Mutation for anonymous feedback submission with throttling protection."""
+
+    feedback = graphene.Field(FeedbackNode)
+
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        rating = graphene.Int(required=True)
+        comment = graphene.String(required=False)
+        client_token = graphene.String(required=True)
+
+    @staticmethod
+    def mutate(root, info, event_id, rating, client_token, comment=None):
+        from events.throttling import EventFeedbackRateThrottle
+
+        request = info.context
+        request.feedback_event_id = event_id
+        request.feedback_client_token = client_token
+
+        throttle = EventFeedbackRateThrottle()
+        if not throttle.allow_request(request, info):
+            raise GraphQLError(str(throttle.throttle_failure_detail))
+
+        try:
+            event = Event.objects.get(pk=event_id)
+        except Event.DoesNotExist as exc:  # pragma: no cover - guarded by DB
+            raise GraphQLError("Event not found.") from exc
+
+        if rating < 1 or rating > 5:
+            raise GraphQLError("Rating must be between 1 and 5.")
+
+        feedback = Feedback.objects.create(
+            event=event,
+            rating=rating,
+            comment=comment or "",
+            client_token=client_token,
+        )
+
+        return CreateFeedback(feedback=feedback)
+
+
+class Mutation(graphene.ObjectType):
+    create_feedback = CreateFeedback.Field(description="Submit anonymous feedback for an event.")
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation)

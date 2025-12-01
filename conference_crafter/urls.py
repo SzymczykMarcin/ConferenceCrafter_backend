@@ -7,7 +7,14 @@ from graphene_django.views import GraphQLView
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from events.views import EventAdminViewSet, EventTypeAdminViewSet, EventTypeViewSet, EventViewSet
+from events.views import (
+    EventAdminViewSet,
+    EventTypeAdminViewSet,
+    EventTypeViewSet,
+    EventViewSet,
+    FeedbackAdminViewSet,
+    FeedbackViewSet,
+)
 from speakers.views import SpeakerAdminViewSet, SpeakerViewSet
 from sponsors.views import (
     CouponAdminViewSet,
@@ -26,6 +33,11 @@ admin_router.register(
     r"events",
     EventAdminViewSet,
     basename="admin-event",
+)
+admin_router.register(
+    r"feedback",
+    FeedbackAdminViewSet,
+    basename="admin-feedback",
 )
 admin_router.register(
     r"speakers",
@@ -53,6 +65,11 @@ user_router.register(
     r"events",
     EventViewSet,
     basename="event",
+)
+user_router.register(
+    r"feedback",
+    FeedbackViewSet,
+    basename="feedback",
 )
 user_router.register(
     r"speakers",
