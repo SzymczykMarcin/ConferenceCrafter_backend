@@ -154,3 +154,26 @@ class SponsorCouponAPITests(TestCase):
             format="json",
         )
         self.assertEqual(future_attempt.status_code, 400)
+
+    def test_coupon_redemption_fails_when_code_not_unique(self):
+        other_sponsor = Sponsor.objects.create(
+            name="Another", logo_url="https://example.com/another.png", description="Other",
+        )
+        now = timezone.now()
+        Coupon.objects.create(
+            sponsor=other_sponsor,
+            code=self.coupon.code,
+            description="Duplicate",
+            discount_amount=5,
+            valid_from=now,
+            valid_to=now + timedelta(days=5),
+        )
+
+        response = self.client.post(
+            "/api/v1/coupon-redemptions/",
+            {"coupon_code": self.coupon.code, "client_token": "ambiguous-1"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("coupon_code", response.data)

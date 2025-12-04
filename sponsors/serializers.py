@@ -57,12 +57,22 @@ class CouponRedemptionSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "coupon", "redeemed_at"]
 
     def validate(self, attrs):
-        try:
-            coupon = Coupon.objects.select_related("sponsor").get(
-                code=attrs["coupon_code"]
+        coupon_code = attrs["coupon_code"]
+        coupons = list(
+            Coupon.objects.select_related("sponsor").filter(code=coupon_code)[:2]
+        )
+
+        if not coupons:
+            raise serializers.ValidationError({"coupon_code": "Invalid coupon code."})
+
+        if len(coupons) > 1:
+            raise serializers.ValidationError(
+                {
+                    "coupon_code": "Multiple coupons found for this code. Please provide a sponsor-specific code.",
+                }
             )
-        except Coupon.DoesNotExist as exc:
-            raise serializers.ValidationError({"coupon_code": "Invalid coupon code."}) from exc
+
+        coupon = coupons[0]
 
         coupon._redemptions_count = coupon.redemptions.count()
 
