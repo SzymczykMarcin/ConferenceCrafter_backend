@@ -2,6 +2,10 @@
 
 Django backend for managing conference events and speakers with admin CRUD APIs and public, Flutter-friendly endpoints.
 
+## Documentation
+- API reference: [docs/api-endpoints.md](docs/api-endpoints.md) – detailed REST coverage (admin and public), JWT, and GraphQL notes.
+- Project structure: see the “Project Structure” section below for a quick module map.
+
 ## Prerequisites
 - Python 3.11+
 - Virtual environment tooling (`python -m venv venv`)
